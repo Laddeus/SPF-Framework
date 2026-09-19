@@ -21,6 +21,9 @@
 !/src/
 !/src/**
 
+!/tests/
+!/tests/**
+
 !/vendor/
 !/vendor/**
 

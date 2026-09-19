@@ -7,6 +7,8 @@
 #include "SPF/Utils/SEHGuard.hpp"
 #include "SPF/Utils/Windows.hpp"  // IWYU pragma: keep
 
+#include "PatternFinderInternal.hpp"
+
 #include <algorithm>
 #include <cctype>
 #include <chrono>
@@ -88,20 +90,6 @@ static std::vector<uintptr_t> FindAllRawInternal(const char* moduleName, const u
     }
   }
   return results;
-}
-
-/**
- * @brief Resolves a pointer chain with depth protection.
- */
-static bool PointerLeadsToString(uintptr_t addr, const char* substring, int maxDepth = 3) {
-  if (addr < 0x10000 || maxDepth <= 0) return false;
-  try {
-    const char* str = reinterpret_cast<const char*>(addr);
-    if (str[0] >= 0x20 && str[0] <= 0x7E && strstr(str, substring)) return true;
-    return PointerLeadsToString(*reinterpret_cast<uintptr_t*>(addr), substring, maxDepth - 1);
-  } catch (...) {
-    return false;
-  }
 }
 
 static std::string NormalizeSignature(const std::string& signature) {
@@ -432,7 +420,7 @@ uintptr_t PatternFinder::FindAttributeOffset(const char* className, const char* 
       for (uintptr_t xref : allAttrXrefs) {
         /* [xref-24]:Offset, [xref-16]:TypeID, [xref]:NamePtr, [xref+8]:OwnerPtr */
         uintptr_t entryOwner = *reinterpret_cast<uintptr_t*>(xref + 8);
-        if (PointerLeadsToString(entryOwner, className)) {
+        if (Detail::PointerLeadsToString(entryOwner, className)) {
           logger->Debug("FindAttributeOffset: Harvesting class '{}'...", className);
           std::vector<uintptr_t> allClassAttrs = FindDataPointers(entryOwner);
           auto& classMap = instance.m_reflectionCache[className];
