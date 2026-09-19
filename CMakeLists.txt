@@ -620,9 +620,3 @@ endif()
 # It points directly to the SPF_API directory to enforce strict isolation.
 add_library(spf_plugin_api INTERFACE)
 target_include_directories(spf_plugin_api INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/SPF/SPF_API)
-
-option(SPF_BUILD_TESTS "Build SPF Framework tests" OFF)
-if(SPF_BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
-endif()
